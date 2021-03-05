@@ -1,7 +1,16 @@
-import re, random
-from pprint import pprint
+"""
 
-letra_original = '''Amou daquela vez como se fosse a última
+"""
+
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
+from pprint import pprint
+import random
+import re
+
+LETRA_ORIGINAL = '''Amou daquela vez como se fosse a última
 Beijou sua mulher como se fosse a última
 E cada filho seu como se fosse o único
 E atravessou a rua com seu passo tímido
@@ -42,9 +51,7 @@ Sentou pra descansar como se fosse um pássaro
 E flutuou no ar como se fosse um príncipe
 E se acabou no chão feito um pacote bêbado
 Morreu na contramão atrapalhando o sábado
-'''
-
-letra_original_complemento = '''Por esse pão pra comer, por esse chão pra dormir
+Por esse pão pra comer, por esse chão pra dormir
 A certidão pra nascer e a concessão pra sorrir
 Por me deixar respirar, por me deixar existir, Deus lhe pague
 Pela cachaça de graça que a gente tem que engolir
@@ -55,32 +62,59 @@ Pela mulher carpideira pra nos louvar e cuspir
 E pelas moscas bicheiras a nos beijar e cobrir
 E pela paz derradeira que enfim vai nos redimir, Deus lhe pague'''
 
-lista_letra_original = letra_original.split('\n')
+lista_letra_original = LETRA_ORIGINAL.split('\n')
+lista_primeira_parte = lista_letra_original[0:41]
+lista_segunda_parte = lista_letra_original[41:]
 
 
 def coleta_proparoxitonas():
-        padrao_proparoxitona = re.compile('\s[\so|a|um\s]*?\w+\n')
-        global proparoxitonas
-        proparoxitonas = re.findall(padrao_proparoxitona, letra_original)
-        proparoxitonas = [str(p).replace('\n','') for p in proparoxitonas]
+    u"""
+    Função para extrair e armazenar as palavras proparoxítonas no fim dos
+    versos da primeira parte da canção.
+
+    Retorna uma lista com as palavras.
+    """
+    padrao_proparoxitona = re.compile(r'\s[\so|a|um\s]*?\w+\n')
+    proparoxitonas = re.findall(padrao_proparoxitona,
+                                '\n'.join(lista_primeira_parte))
+    proparoxitonas = [str(p).replace('\n', '') for p in proparoxitonas]
+    return proparoxitonas
 
 
-def limpa_proparoxitonas():
-    global letra_sem_proparoxitonas
+def limpa_proparoxitonas(proparoxitonas):
+    u"""
+    Função para limpar a primeira parte da canção das palavras proparoxítonas
+    no fim dos versos.
+
+    Retorna uma lista com a letra sem as proparoxítonas.
+    """
     letra_sem_proparoxitonas = list()
-    for n in range(len(lista_letra_original) - 1):
-        letra_sem_proparoxitonas.append(lista_letra_original[n].replace(proparoxitonas[n], ''))
+    for n in range(len(lista_primeira_parte) - 1):
+        verso_limpo = lista_primeira_parte[n].replace(proparoxitonas[n], '')
+        letra_sem_proparoxitonas.append(verso_limpo)
+    return letra_sem_proparoxitonas
 
 
-def recompoe_letra():
-    global letra_nova
+def recompoe_letra(letra_sem_proparoxitonas, proparoxitonas):
+    u"""
+    Função para recompor a letra da canção com novas palavras proparoxítonas.
+
+    Retorna o resultado da reconstrução através da variável letra_nova.
+    """
     letra_nova = list()
     for verso in letra_sem_proparoxitonas:
-        casa_verso(verso)
-    letra_nova = '\n'.join(letra_nova) + '\n' + letra_original_complemento
+        casa_verso(verso, letra_nova, proparoxitonas)
+    letra_nova = '\n'.join(letra_nova) + '\n' +\
+                 '\n'.join(lista_segunda_parte)
+    return letra_nova
 
 
-def casa_verso(verso):
+def casa_verso(verso, letra_nova, proparoxitonas):
+    u"""
+    Função para recompor cada verso com uma palavra proparoxítona.
+
+    Retorna um verso reconstruído para a variável lista_nova.
+    """
     proparoxitona = random.choice(proparoxitonas)
     if verso.endswith('s') and proparoxitona.endswith('s'):
         proparoxitonas.remove(proparoxitona)
@@ -89,13 +123,18 @@ def casa_verso(verso):
         proparoxitonas.remove(proparoxitona)
         letra_nova.append(str(verso) + proparoxitona)
     else:
-        casa_verso(verso)
+        casa_verso(verso, letra_nova, proparoxitonas)
 
 
 def reconstrucao():
-    coleta_proparoxitonas()
-    limpa_proparoxitonas()
-    recompoe_letra()
+    u"""
+    Função para sintetizar toda a tarefa do script.
+
+    Retorna a letra nova da canção.
+    """
+    proparoxitonas = coleta_proparoxitonas()
+    letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
+    letra_nova = recompoe_letra(letra_sem_proparoxitonas, proparoxitonas)
     pprint(letra_nova)
 
 
