@@ -6,6 +6,7 @@
 # -*- coding: utf-8 -*-
 
 
+import json
 from pprint import pprint
 import random
 import re
@@ -126,17 +127,39 @@ def casa_verso(verso, letra_nova, proparoxitonas):
         casa_verso(verso, letra_nova, proparoxitonas)
 
 
-def reconstrucao():
+def reconstrucao_interna():
     u"""
     Função para sintetizar toda a tarefa do script.
 
-    Retorna a letra nova da canção.
+    Retorna a letra nova da canção recombinando as proparoxítonas
+    que já existiam na letra.
     """
     proparoxitonas = coleta_proparoxitonas()
     letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
     letra_nova = recompoe_letra(letra_sem_proparoxitonas, proparoxitonas)
+    return letra_nova
+    pprint(letra_nova)
+
+
+def reconstrucao_externa():
+    u"""
+    Função para sintetizar toda a tarefa do script.
+
+    Retorna a letra nova da canção utilizando proparoxítonas retiradas do
+    Portal da Língua Portuguesa (portaldalinguaportuguesa.org).
+    """
+    arquivo_proparoxitonas = open('proparoxitonas.json', 'r', encoding='utf8')
+    json_proparoxitonas = json.load(arquivo_proparoxitonas)
+    vocabulario_proparoxitonas = list()
+    for j in json_proparoxitonas:
+        vocabulario_proparoxitonas.append(' ' + j['palavra'])
+    proparoxitonas = coleta_proparoxitonas()
+    letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
+    letra_nova = recompoe_letra(letra_sem_proparoxitonas,
+                                vocabulario_proparoxitonas)
+    return letra_nova
     pprint(letra_nova)
 
 
 if __name__ == '__main__':
-    reconstrucao()
+    pass

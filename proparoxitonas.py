@@ -25,13 +25,16 @@ def gera_proparoxitonas(vocabulario):
     ACENTO = list('áéíóúâêîôûãõ')
     proparoxitonas = list()
     for v in vocabulario:
-        lista_silabas = v['sílabas'].replace('-', '·').split('·')
-        qtde_silabas = len(lista_silabas)
-        v['qtde_silabas'] = qtde_silabas
-        if v['qtde_silabas'] == 3:
-            for a in ACENTO:
-                if a in lista_silabas[0]:
-                    proparoxitonas.append(v)
+        if '-' in v:
+            pass
+        else:
+            lista_silabas = v['sílabas'].split('·')
+            qtde_silabas = len(lista_silabas)
+            v['qtde_silabas'] = qtde_silabas
+            if v['qtde_silabas'] == 3:
+                for a in ACENTO:
+                    if a in lista_silabas[0]:
+                        proparoxitonas.append(v)
     return proparoxitonas
 
 
