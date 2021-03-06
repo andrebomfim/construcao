@@ -6,6 +6,7 @@
 # -*- coding: utf-8 -*-
 
 
+from datetime import datetime
 import json
 from pprint import pprint
 import random
@@ -116,6 +117,7 @@ def casa_verso(verso, letra_nova, proparoxitonas):
 
     Retorna um verso reconstruído para a variável lista_nova.
     """
+    random.seed(datetime.now())
     proparoxitona = random.choice(proparoxitonas)
     if verso.endswith('s') and proparoxitona.endswith('s'):
         proparoxitonas.remove(proparoxitona)
@@ -151,14 +153,28 @@ def reconstrucao_externa():
     arquivo_proparoxitonas = open('proparoxitonas.json', 'r', encoding='utf8')
     json_proparoxitonas = json.load(arquivo_proparoxitonas)
     vocabulario_proparoxitonas = list()
+    dicionario_proparoxitonas = dict()
     for j in json_proparoxitonas:
         vocabulario_proparoxitonas.append(' ' + j['palavra'])
+        dicionario_proparoxitonas['palavra'] = {'id': j['id'],
+                                                'tipo': j['tipo'],
+                                                'silabas': j['sílabas'],
+                                                'n_silabas': j['qtde_silabas']}
     proparoxitonas = coleta_proparoxitonas()
     letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
     letra_nova = recompoe_letra(letra_sem_proparoxitonas,
                                 vocabulario_proparoxitonas)
-    return letra_nova
+    return letra_nova, dicionario_proparoxitonas
     pprint(letra_nova)
+
+
+def anota_tipo(palavra):
+    u"""
+    """
+    arquivo_proparoxitonas = open('proparoxitonas.json', 'r', encoding='utf8')
+    json_proparoxitonas = json.load(arquivo_proparoxitonas)
+    dic_proparoxitonas = dict()
+
 
 
 if __name__ == '__main__':
