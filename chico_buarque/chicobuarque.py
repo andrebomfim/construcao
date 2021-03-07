@@ -42,7 +42,7 @@ def lista_musicas(sopa):
 def salva_musicas(lista_musicas):
     """
     """
-    driver = webdriver.Firefox()
+    driver = webdriver.PhantomJS()
     time.sleep(1)
     for m in lista_musicas:
         driver.get(m)
