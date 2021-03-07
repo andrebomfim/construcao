@@ -68,6 +68,8 @@ def salva_musicas(lista_musicas):
 
 
 def chico_buarque():
+    """
+    """
     url = 'http://chicobuarque.com.br/construcao/menu_alfabetica1.htm'
     sopa = abre_html(url)
     links_musicas = lista_musicas(sopa)
