@@ -7,6 +7,8 @@
 
 from bs4 import BeautifulSoup as bs
 import requests
+from selenium import webdriver
+import time
 
 
 def abre_html(url):
@@ -27,7 +29,7 @@ def lista_musicas(sopa):
         if l is not None:
             if l.startswith('javascript:wopen('):
                 lista_hrefs.append(l)
-    prefixo_url = 'http://chicobuarque.com.br/construcao/mestre.asp?pg='
+    prefixo_url = 'http://chicobuarque.com.br/letras/'
     lista_musicas = list()
     for h in lista_hrefs:
         sufixo_url = h.replace("javascript:wopen('", "")
@@ -40,22 +42,37 @@ def lista_musicas(sopa):
 def salva_musicas(lista_musicas):
     """
     """
+    driver = webdriver.Firefox()
+    time.sleep(1)
     for m in lista_musicas:
-        # https://pythonspot.com/selenium-phantomjs/
-        sopa = abre_html(m)
-        tabela_html = sopa.find('table')
-        linhas_tabela = tabela_html.find_all('td')
-        titulo = linhas_tabela[2].text
-        letra = linhas_tabela[5].text
-        cancao = titulo + '\n\n' + letra
-        nome_arquivo = './cancioneiro/' + m.split('=')[-1]
-        nome_arquivo = nome_arquivo.replace('.htm', '.txt')
-        with open(nome_arquivo, 'w', encoding='utf8') as musica:
-            musica.write(cancao)
+        driver.get(m)
+        time.sleep(1)
+        sopa = bs(driver.page_source, 'html.parser')
+        try:
+            tabela_html = sopa.find('table')
+            linhas_tabela = tabela_html.find_all('td')
+            titulo = linhas_tabela[2].text
+            letra = linhas_tabela[5].text
+        except AttributeError:
+            body = sopa.find('body')
+            letra = body.text
+        print(m.split('/')[-1])
+        nome_arquivo = './cancioneiro/' + m.split('/')[-1]
+        nome_arquivo_letra = nome_arquivo.replace('.htm', '.txt')
+        nome_arquivo_titulo = nome_arquivo.replace('.htm', '_titulo.txt')
+        with open(nome_arquivo_letra, 'w', encoding='utf8') as musica:
+            musica.write(letra)
+        with open(nome_arquivo_titulo, 'w', encoding='utf8') as metadados:
+            metadados.write(titulo)
+    driver.close()
 
 
 def chico_buarque():
     url = 'http://chicobuarque.com.br/construcao/menu_alfabetica1.htm'
     sopa = abre_html(url)
-    lista_musicas = lista_musicas(sopa)
-    salva_musicas(lista_musicas)
+    links_musicas = lista_musicas(sopa)
+    salva_musicas(links_musicas)
+
+
+if __name__ == '__main__':
+    chico_buarque()
