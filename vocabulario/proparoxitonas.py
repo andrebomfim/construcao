@@ -24,7 +24,7 @@ def gera_proparoxitonas(vocabulario):
     """
     ACENTO = list('áéíóúâêîôûãõ')
     proparoxitonas = list()
-    count = 0
+    # count = 0
     for v in vocabulario:
         if '-' in v['sílabas'] or ' ' in v['sílabas']:
             pass
@@ -35,8 +35,8 @@ def gera_proparoxitonas(vocabulario):
             if v['qtde_silabas'] == 3:
                 for a in ACENTO:
                     if a in lista_silabas[0]:
-                        count += 1
-                        v['id'] = count
+                        # count += 1
+                        # v['id'] = count
                         proparoxitonas.append(v)
     return proparoxitonas
 

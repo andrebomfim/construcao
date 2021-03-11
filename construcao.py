@@ -6,8 +6,10 @@
 # -*- coding: utf-8 -*-
 
 
+from collections import defaultdict, Counter
 from datetime import datetime
 import json
+import os
 from pprint import pprint
 import random
 import re
@@ -72,7 +74,27 @@ lista_primeira_parte = lista_letra_original[0:41]
 lista_segunda_parte = lista_letra_original[41:]
 
 
-def carrega_vocabulario():
+def carrega_cancioneiro():
+    u"""
+    """
+    lista_cancioneiro = list()
+    os.chdir('./chico_buarque/cancioneiro/')
+    for t in os.listdir():
+        if t.endswith('_titulo.txt'):
+            pass
+        else:
+            with open(t, 'r', encoding='utf8') as arquivo_letra:
+                letra = arquivo_letra.read()
+                letra = letra.replace('\n', ' ')
+                palavras = letra.split()
+                for palavra in palavras:
+                    lista_cancioneiro.append(palavra)
+    cancioneiro = Counter(lista_cancioneiro)
+    os.chdir('../../')
+    return cancioneiro
+
+
+def carrega_vocabulario(cancioneiro):
     u"""
     Função para carregar as proparoxítonas presentes no acervo de palavras.
 
@@ -85,18 +107,38 @@ def carrega_vocabulario():
     arquivo_proparoxitonas = open('./vocabulario/proparoxitonas.json',
                                   'r', encoding='utf8')
     json_proparoxitonas = json.load(arquivo_proparoxitonas)
-    vocabulario_prop = list()
-    # dicionario_proparoxitonas = dict()
+    arquivo_frequencia = open('./corpus_pt-br/wl_cb_full_1gram.txt',
+                              'r', encoding='utf8')
+    frequencia_raw = arquivo_frequencia.readlines()
+    padrao_frequencia = re.compile(r'\w+\s*\t*\d+')
+    frequencia_palavras = dict()
+    for f in frequencia_raw:
+        pesquisa = re.findall(padrao_frequencia, f)
+        try:
+            pesquisa = ''.join(pesquisa)
+            pesquisa = pesquisa.split()
+            palavra = pesquisa[0].lower()
+            frequencia = pesquisa[1]
+            frequencia_palavras[palavra] = frequencia
+        except IndexError:
+            pass
+    vocabulario = defaultdict(list)
     for j in json_proparoxitonas:
-        vocabulario_prop.append(' ' + j['palavra'])
-        """
-        dicionario_proparoxitonas['palavra'] = {'id': j['id'],
-                                                'tipo': j['tipo'],
-                                                'silabas': j['sílabas'],
-                                                'n_silabas': j['qtde_silabas']}
-        """
-    prop_mais_frequentes = ''
-    return vocabulario_prop, prop_mais_frequentes
+        j['frequencia_pt'] = frequencia_palavras.get(j['palavra'], 0)
+        j['frequencia_chico'] = cancioneiro.get(j['palavra'], 0)
+        vocabulario[j['palavra']].append(j)
+    # gera um dicionário contendo as palavras como chaves e os itens do
+    # vocabulário como pares.
+    arquivo_proparoxitonas.close()
+    arquivo_frequencia.close()
+    with open('./vocabulario_prop.json', 'w', encoding='utf8') as v_json:
+        json.dump(vocabulario, v_json)
+    return vocabulario
+
+
+def carrega_proparoxitonas(vocabulario):
+    pass
+    return prop_voc, prop_frequentes, prop_cancioneiro
 
 
 def coleta_proparoxitonas():
@@ -125,11 +167,6 @@ def limpa_proparoxitonas(prop_originais):
         verso_limpo = lista_primeira_parte[n].replace(prop_originais[n], '')
         letra_sem_prop.append(verso_limpo)
     return letra_sem_prop
-
-
-def carrega_cancioneiro():
-    global prop_cancioneiro
-    pass
 
 
 def recompoe_letra(letra_sem_prop, proparoxitonas):
@@ -206,8 +243,8 @@ def reconstrucao(numero):
     try:
         dicionario_criterios = {1: prop_originais,
                                 2: prop_cancioneiro,
-                                3: prop_mais_frequentes,
-                                4: vocabulario_prop}
+                                3: prop_frequentes,
+                                4: prop_voc}
     except NameError:
         carrega_variaveis()
     if type(numero) == int:
@@ -237,7 +274,9 @@ def reconstrucao(numero):
         pprint(letra_nova)
 
 
-vocabulario_prop, prop_mais_frequentes = carrega_vocabulario()
+cancioneiro = carrega_cancioneiro()
+vocabulario = carrega_vocabulario(cancioneiro)
+prop_voc, prop_frequentes, prop_cancioneiro = carrega_proparoxitonas()
 prop_originais = coleta_proparoxitonas()
 letra_sem_prop = limpa_proparoxitonas(prop_originais)
 prop_cancioneiro = carrega_cancioneiro()
