@@ -111,21 +111,22 @@ def carrega_vocabulario(cancioneiro):
     arquivo_frequencia = open('./corpus_pt-br/wl_cb_full_1gram.txt',
                               'r', encoding='utf8')
     frequencia_raw = arquivo_frequencia.readlines()
-    padrao_frequencia = re.compile(r'\w+\s*\t*\d+')
-    frequencia_palavras = dict()
+    padrao_frequencia = re.compile(r'([A-záéíóúüâêîûãõ\-_]+)[\s|\t]*([0-9]+)')
+    frequencia_palavras = defaultdict(list)
     for f in frequencia_raw:
-        pesquisa = re.findall(padrao_frequencia, f)
+        pesquisa = re.findall(padrao_frequencia, f.lower())
         try:
-            pesquisa = ''.join(pesquisa)
-            pesquisa = pesquisa.split()
-            palavra = pesquisa[0].lower()
-            frequencia = pesquisa[1]
-            frequencia_palavras[palavra] = frequencia
+            palavra = pesquisa[0][0]
+            frequencia = int(pesquisa[0][1])
+            frequencia_palavras[palavra].append(frequencia)
         except IndexError:
             pass
     vocabulario = defaultdict(list)
     for j in json_proparoxitonas:
-        j['frequencia_pt'] = frequencia_palavras.get(j['palavra'], 0)
+        try:
+            j['frequencia_pt'] = sum(frequencia_palavras.get(j['palavra'], 0))
+        except TypeError:
+            j['frequencia_pt'] = frequencia_palavras.get(j['palavra'], 0)
         j['frequencia_chico'] = cancioneiro.get(j['palavra'], 0)
         vocabulario[j['palavra']].append(j)
     # gera um dicionário contendo as palavras como chaves e os itens do
