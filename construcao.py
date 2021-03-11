@@ -86,9 +86,10 @@ def carrega_cancioneiro():
             with open(t, 'r', encoding='utf8') as arquivo_letra:
                 letra = arquivo_letra.read()
                 letra = letra.replace('\n', ' ')
+                letra = letra.split('©')[0]
                 palavras = letra.split()
                 for palavra in palavras:
-                    lista_cancioneiro.append(palavra)
+                    lista_cancioneiro.append(palavra.lower())
     cancioneiro = Counter(lista_cancioneiro)
     os.chdir('../../')
     return cancioneiro
