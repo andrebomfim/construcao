@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 streamlit/
+_versoes/
 
 # C extensions
 *.so

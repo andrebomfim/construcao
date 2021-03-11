@@ -26,7 +26,7 @@ def gera_proparoxitonas(vocabulario):
     proparoxitonas = list()
     count = 0
     for v in vocabulario:
-        if '-' in v:
+        if '-' in v['sílabas'] or ' ' in v['sílabas']:
             pass
         else:
             lista_silabas = v['sílabas'].split('·')

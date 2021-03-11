@@ -12,6 +12,9 @@ from pprint import pprint
 import random
 import re
 
+
+random.seed(datetime.now())
+
 LETRA_ORIGINAL = '''Amou daquela vez como se fosse a última
 Beijou sua mulher como se fosse a última
 E cada filho seu como se fosse o único
@@ -69,6 +72,33 @@ lista_primeira_parte = lista_letra_original[0:41]
 lista_segunda_parte = lista_letra_original[41:]
 
 
+def carrega_vocabulario():
+    u"""
+    Função para carregar as proparoxítonas presentes no acervo de palavras.
+
+    O arquivo de vocabulário foi retirado do Portal da Língua Portuguesa
+    (portaldalinguaportuguesa.org).
+
+    Retorna uma lista contendo dicionário com as palavras, id, tipo, separação
+    silábica e quantidade de sílabas.
+    """
+    arquivo_proparoxitonas = open('./vocabulario/proparoxitonas.json',
+                                  'r', encoding='utf8')
+    json_proparoxitonas = json.load(arquivo_proparoxitonas)
+    vocabulario_prop = list()
+    # dicionario_proparoxitonas = dict()
+    for j in json_proparoxitonas:
+        vocabulario_prop.append(' ' + j['palavra'])
+        """
+        dicionario_proparoxitonas['palavra'] = {'id': j['id'],
+                                                'tipo': j['tipo'],
+                                                'silabas': j['sílabas'],
+                                                'n_silabas': j['qtde_silabas']}
+        """
+    prop_mais_frequentes = ''
+    return vocabulario_prop, prop_mais_frequentes
+
+
 def coleta_proparoxitonas():
     u"""
     Função para extrair e armazenar as palavras proparoxítonas no fim dos
@@ -79,32 +109,37 @@ def coleta_proparoxitonas():
     padrao_proparoxitona = re.compile(r'\s[\so|a|um\s]*?\w+\n')
     proparoxitonas = re.findall(padrao_proparoxitona,
                                 '\n'.join(lista_primeira_parte))
-    proparoxitonas = [str(p).replace('\n', '') for p in proparoxitonas]
-    return proparoxitonas
+    prop_originais = [str(p).replace('\n', '') for p in proparoxitonas]
+    return prop_originais
 
 
-def limpa_proparoxitonas(proparoxitonas):
+def limpa_proparoxitonas(prop_originais):
     u"""
     Função para limpar a primeira parte da canção das palavras proparoxítonas
     no fim dos versos.
 
     Retorna uma lista com a letra sem as proparoxítonas.
     """
-    letra_sem_proparoxitonas = list()
+    letra_sem_prop = list()
     for n in range(len(lista_primeira_parte) - 1):
-        verso_limpo = lista_primeira_parte[n].replace(proparoxitonas[n], '')
-        letra_sem_proparoxitonas.append(verso_limpo)
-    return letra_sem_proparoxitonas
+        verso_limpo = lista_primeira_parte[n].replace(prop_originais[n], '')
+        letra_sem_prop.append(verso_limpo)
+    return letra_sem_prop
 
 
-def recompoe_letra(letra_sem_proparoxitonas, proparoxitonas):
+def carrega_cancioneiro():
+    global prop_cancioneiro
+    pass
+
+
+def recompoe_letra(letra_sem_prop, proparoxitonas):
     u"""
     Função para recompor a letra da canção com novas palavras proparoxítonas.
 
     Retorna o resultado da reconstrução através da variável letra_nova.
     """
     letra_nova = list()
-    for verso in letra_sem_proparoxitonas:
+    for verso in letra_sem_prop:
         casa_verso(verso, letra_nova, proparoxitonas)
     letra_nova = '\n'.join(letra_nova) + '\n' +\
                  '\n'.join(lista_segunda_parte)
@@ -117,65 +152,96 @@ def casa_verso(verso, letra_nova, proparoxitonas):
 
     Retorna um verso reconstruído para a variável lista_nova.
     """
-    random.seed(datetime.now())
     proparoxitona = random.choice(proparoxitonas)
     if verso.endswith('s') and proparoxitona.endswith('s'):
         proparoxitonas.remove(proparoxitona)
         letra_nova.append(str(verso) + proparoxitona)
     elif not verso.endswith('s') and not proparoxitona.endswith('s'):
-        proparoxitonas.remove(proparoxitona)
-        letra_nova.append(str(verso) + proparoxitona)
+        if verso.endswith(' fosse'):
+            proparoxitonas.remove(proparoxitona)
+            letra_nova.append(str(verso) + proparoxitona)
+        elif verso.endswith(' atrapalhando'):
+            proparoxitonas.remove(proparoxitona)
+            letra_nova.append(str(verso) + proparoxitona)
+        else:
+            if verso.endswith('passo') and proparoxitona.endswith('a'):
+                casa_verso(verso, letra_nova, proparoxitonas)
+            elif verso.endswith('pacote') and proparoxitona.endswith('a'):
+                casa_verso(verso, letra_nova, proparoxitonas)
+            elif verso.endswith('o') and proparoxitona.endswith('música'):
+                casa_verso(verso, letra_nova, proparoxitonas)
+            elif verso.endswith('o') and proparoxitona.endswith('única'):
+                casa_verso(verso, letra_nova, proparoxitonas)
+            elif verso.endswith(' e') and proparoxitona.endswith('única'):
+                casa_verso(verso, letra_nova, proparoxitonas)
+            else:
+                proparoxitonas.remove(proparoxitona)
+                proparoxitona = proparoxitona.replace(' um ', ' ')
+                proparoxitona = proparoxitona.replace(' o ', ' ')
+                proparoxitona = proparoxitona.replace(' a ', ' ')
+                letra_nova.append(str(verso) + proparoxitona)
     else:
         casa_verso(verso, letra_nova, proparoxitonas)
 
 
-def reconstrucao_interna():
+def reconstrucao(numero):
     u"""
     Função para sintetizar toda a tarefa do script.
 
-    Retorna a letra nova da canção recombinando as proparoxítonas
-    que já existiam na letra.
+    Param: números decimais de 0 a 4.
+
+    Retorna a letra da música, segundo os critérios:
+    0: Letra original sem modificações
+    1: Letra com rearranjo das proparoxítonas já existentes.
+    2: Letra com rearranjo a partir do cancioneiro de Chico Buarque.
+    3: Letra com rearranjo a partir das proparoxítonas mais frequentes na
+       língua portuguesa.
+    4: Letra com rearranjo a partir de quaisquer proparoxítonas.
+
+    Números decimais combinam parte das palavras entre parâmetros distintos.
+    Um número 2,6, por exemplo, combina 40% de proparoxítonas do critério 2
+    com 60% de proparoxítonas do critério 3, resultando numa versão da letra
+    com resultado misturado.
     """
-    proparoxitonas = coleta_proparoxitonas()
-    letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
-    letra_nova = recompoe_letra(letra_sem_proparoxitonas, proparoxitonas)
-    return letra_nova
-    pprint(letra_nova)
+    try:
+        dicionario_criterios = {1: prop_originais,
+                                2: prop_cancioneiro,
+                                3: prop_mais_frequentes,
+                                4: vocabulario_prop}
+    except NameError:
+        carrega_variaveis()
+    if type(numero) == int:
+        if numero == 0:
+            return LETRA_ORIGINAL
+            pprint(LETRA_ORIGINAL)
+        else:
+            letra_nova = recompoe_letra(letra_sem_prop,
+                                        dicionario_criterios[numero])
+            pprint(letra_nova)
+    else:
+        lista_1 = dicionario_criterios[numero // 1]
+        # carrega a primeira lista de proparoxítonas a partir do número
+        # indicado no dicionario de critérios, arredondando para baixo.
+        lista_2 = dicionario_criterios[(numero // 1) + 1]
+        # carrega a segunda lista de proparoxítonas a partir do número
+        # indicado no dicionario de critérios, arredondando para cima.
+        numero_intervalo = numero % 1
+        numero_lista_2 = round(numero_intervalo * 41)
+        numero_lista_1 = 41 - numero_lista_2
+        proparoxitonas = list()
+        for n in range(numero_lista_1):
+            proparoxitonas.append(random.choice(lista_1))
+        for n in range(numero_lista_2):
+            proparoxitonas.append(random.choice(lista_2))
+        letra_nova = recompoe_letra()
+        pprint(letra_nova)
 
 
-def reconstrucao_externa():
-    u"""
-    Função para sintetizar toda a tarefa do script.
-
-    Retorna a letra nova da canção utilizando proparoxítonas retiradas do
-    Portal da Língua Portuguesa (portaldalinguaportuguesa.org).
-    """
-    arquivo_proparoxitonas = open('proparoxitonas.json', 'r', encoding='utf8')
-    json_proparoxitonas = json.load(arquivo_proparoxitonas)
-    vocabulario_proparoxitonas = list()
-    dicionario_proparoxitonas = dict()
-    for j in json_proparoxitonas:
-        vocabulario_proparoxitonas.append(' ' + j['palavra'])
-        dicionario_proparoxitonas['palavra'] = {'id': j['id'],
-                                                'tipo': j['tipo'],
-                                                'silabas': j['sílabas'],
-                                                'n_silabas': j['qtde_silabas']}
-    proparoxitonas = coleta_proparoxitonas()
-    letra_sem_proparoxitonas = limpa_proparoxitonas(proparoxitonas)
-    letra_nova = recompoe_letra(letra_sem_proparoxitonas,
-                                vocabulario_proparoxitonas)
-    return letra_nova, dicionario_proparoxitonas
-    pprint(letra_nova)
-
-
-def anota_tipo(palavra):
-    u"""
-    """
-    arquivo_proparoxitonas = open('proparoxitonas.json', 'r', encoding='utf8')
-    json_proparoxitonas = json.load(arquivo_proparoxitonas)
-    dic_proparoxitonas = dict()
-
+vocabulario_prop, prop_mais_frequentes = carrega_vocabulario()
+prop_originais = coleta_proparoxitonas()
+letra_sem_prop = limpa_proparoxitonas(prop_originais)
+prop_cancioneiro = carrega_cancioneiro()
 
 
 if __name__ == '__main__':
-    pass
+    reconstrucao(1)
