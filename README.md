@@ -7,4 +7,10 @@ Canções de Chico Buarque extraídas do [site do artista](http://chicobuarque.c
 
 
 TODO:
-- Melhorar corpus de Portugues, pesquisar no Project Gutenberg.
+- testar Spacy com hunspell integrando dicionario pt-BR
+- testar TextBlob spellchecker com dicionario de frequencia de palavras em pt-BT
+- testar pyspellchecker com frequencia de palavras em pt-BR
+- testar language_tool_python - https://pypi.org/project/language-tool-python/
+- testar contextualSpellChecker usando BERT no spacy
+- testar BERTimbau
+- usar spacy para extrair lemma de vocabulario ou testar spacy com hunspell ou TextBlob para corrigir versos com concordancia errada.
