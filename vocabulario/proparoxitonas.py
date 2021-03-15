@@ -44,7 +44,7 @@ def gera_proparoxitonas(vocabulario):
 def proparoxitonas():
     """
     """
-    vocabulario = carrega_vocabulario('./vocabulario.csv')
+    vocabulario = carrega_vocabulario('./vocabulario_portal.csv')
     proparoxitonas = gera_proparoxitonas(vocabulario)
     with open('./proparoxitonas.json', 'w', encoding='utf8') as arquivo_json:
         json.dump(proparoxitonas, arquivo_json)

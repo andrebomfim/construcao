@@ -74,11 +74,17 @@ lista_primeira_parte = lista_letra_original[0:41]
 lista_segunda_parte = lista_letra_original[41:]
 
 
+def carrega_vocabulario():
+    pass
+    return vocabulario
+
+
+# TODO: CORRIGIR
 def carrega_cancioneiro():
     u"""
     """
     lista_cancioneiro = list()
-    os.chdir('./chico_buarque/cancioneiro/')
+    os.chdir('../chico_buarque/cancioneiro/')
     for t in os.listdir():
         if t.endswith('_titulo.txt'):
             pass
@@ -95,6 +101,7 @@ def carrega_cancioneiro():
     return cancioneiro
 
 
+# TODO: CORRIGIR
 def carrega_vocabulario(cancioneiro):
     u"""
     Função para carregar as proparoxítonas presentes no acervo de palavras.
@@ -105,22 +112,10 @@ def carrega_vocabulario(cancioneiro):
     Retorna uma lista contendo dicionário com as palavras, id, tipo, separação
     silábica e quantidade de sílabas.
     """
-    arquivo_proparoxitonas = open('./vocabulario/proparoxitonas.json',
+    arquivo_proparoxitonas = open('./proparoxitonas.json',
                                   'r', encoding='utf8')
     json_proparoxitonas = json.load(arquivo_proparoxitonas)
-    arquivo_frequencia = open('./corpus_pt-br/wl_cb_full_1gram.txt',
-                              'r', encoding='utf8')
-    frequencia_raw = arquivo_frequencia.readlines()
-    padrao_frequencia = re.compile(r'([A-záéíóúüâêîûãõ\-_]+)[\s|\t]*([0-9]+)')
-    frequencia_palavras = defaultdict(list)
-    for f in frequencia_raw:
-        pesquisa = re.findall(padrao_frequencia, f.lower())
-        try:
-            palavra = pesquisa[0][0]
-            frequencia = int(pesquisa[0][1])
-            frequencia_palavras[palavra].append(frequencia)
-        except IndexError:
-            pass
+    # Aqui existia a criação do dicionário de frequencia de palavras.
     vocabulario = defaultdict(list)
     for j in json_proparoxitonas:
         try:
@@ -133,7 +128,7 @@ def carrega_vocabulario(cancioneiro):
     # vocabulário como pares.
     arquivo_proparoxitonas.close()
     arquivo_frequencia.close()
-    with open('./vocabulario_prop.json', 'w', encoding='utf8') as v_json:
+    with open('../vocabulario_prop.json', 'w', encoding='utf8') as v_json:
         json.dump(vocabulario, v_json)
     return vocabulario
 
@@ -276,6 +271,7 @@ def reconstrucao(numero):
         pprint(letra_nova)
 
 
+# TODO: CORRIGIR
 cancioneiro = carrega_cancioneiro()
 vocabulario = carrega_vocabulario(cancioneiro)
 prop_voc, prop_frequentes, prop_cancioneiro = carrega_proparoxitonas()

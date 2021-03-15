@@ -1,44 +1,24 @@
+"""
+www.dicio.com.br
+"""
+
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
 from collections import defaultdict, Counter
+from dicio import Dicio
 import json
 import os
+import random
 import re
+import time
 
 
-def carrega_cancioneiro():
+def carrega_palavras_frequentes():
     u"""
     """
-    lista_cancioneiro = list()
-    os.chdir('./chico_buarque/cancioneiro/')
-    for t in os.listdir():
-        if t.endswith('_titulo.txt'):
-            pass
-        else:
-            with open(t, 'r', encoding='utf8') as arquivo_letra:
-                letra = arquivo_letra.read()
-                letra = letra.replace('\n', ' ')
-                letra = letra.split('©')[0]
-                palavras = letra.split()
-                for palavra in palavras:
-                    lista_cancioneiro.append(palavra.lower())
-    cancioneiro = Counter(lista_cancioneiro)
-    os.chdir('../../')
-    return cancioneiro
-
-
-def carrega_vocabulario(cancioneiro):
-    u"""
-    Função para carregar as proparoxítonas presentes no acervo de palavras.
-
-    O arquivo de vocabulário foi retirado do Portal da Língua Portuguesa
-    (portaldalinguaportuguesa.org).
-
-    Retorna uma lista contendo dicionário com as palavras, id, tipo, separação
-    silábica e quantidade de sílabas.
-    """
-    arquivo_proparoxitonas = open('./vocabulario/proparoxitonas.json',
-                                  'r', encoding='utf8')
-    json_proparoxitonas = json.load(arquivo_proparoxitonas)
-    arquivo_frequencia = open('./corpus_pt-br/wl_cb_full_1gram.txt',
+    arquivo_frequencia = open('../corpus_pt-br/wl_cb_full_1gram.txt',
                               'r', encoding='utf8')
     frequencia_raw = arquivo_frequencia.readlines()
     padrao_frequencia = re.compile(r'([A-záéíóúüâêîûãõ\-_]+)[\s|\t]*([0-9]+)')
@@ -51,18 +31,40 @@ def carrega_vocabulario(cancioneiro):
             frequencia_palavras[palavra].append(frequencia)
         except IndexError:
             pass
-    vocabulario = defaultdict(list)
-    for j in json_proparoxitonas:
+    return frequencia_palavras
+
+
+def cria_vocabulario(lista_palavras):
+    u"""
+    """
+    vocabulario = dict()
+    dicio = Dicio()
+    for k, v in lista_palavras.items():
+        dicio_palavra = dict()
         try:
-            j['frequencia_pt'] = sum(frequencia_palavras.get(j['palavra'], 0))
-        except TypeError:
-            j['frequencia_pt'] = frequencia_palavras.get(j['palavra'], 0)
-        j['frequencia_chico'] = cancioneiro.get(j['palavra'], 0)
-        vocabulario[j['palavra']].append(j)
-    # gera um dicionário contendo as palavras como chaves e os itens do
-    # vocabulário como pares.
-    arquivo_proparoxitonas.close()
-    arquivo_frequencia.close()
-    with open('./vocabulario_prop.json', 'w', encoding='utf8') as v_json:
-        json.dump(vocabulario, v_json)
+            w = dicio.search(k)
+            dicio_palavra = {'etimologia': w.etymology,
+                             'exemplos': w.examples,
+                             'frequencia_pt-br': sum(v),
+                             'significado': w.meaning,
+                             'sinonimos': w.synonyms,
+                             'url': w.url}
+            for chave, valor in w.extra.items():
+                dicio_palavra = {chave.lower(): valor}
+        vocabulario[w.word] = dicio_palavra
+        time.sleep(random.randint(4, 10))
     return vocabulario
+
+
+def salva_vocabulario(vocabulario):
+    u"""
+    """
+    with open('./vocabulario_dicio.json', 'w', encoding='utf8') as arquivo:
+        json.dump(vocabulario, arquivo)
+
+
+
+if __name__ == '__main__':
+    lista_palavras = carrega_palavras_frequentes()
+    vocabulario = cria_vocabulario(lista_palavras)
+    salva_vocabulario(vocabulario)

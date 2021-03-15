@@ -5,6 +5,7 @@ __pycache__/
 
 streamlit/
 _versoes/
+corpus_pt-br
 
 # C extensions
 *.so
