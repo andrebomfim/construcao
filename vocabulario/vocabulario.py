@@ -51,7 +51,12 @@ def cria_vocabulario(lista_palavras):
                              'url': w.url}
             for chave, valor in w.extra.items():
                 dicio_palavra = {chave.lower(): valor}
-        vocabulario[w.word] = dicio_palavra
+                if chave == 'Separação silábica':
+                    dicio_palavra['qtde_silabas'] = len(valor.split('-'))
+            vocabulario[w.word] = dicio_palavra
+        except Exception as erro:
+            print(erro)
+            break
         time.sleep(random.randint(4, 10))
     return vocabulario
 
